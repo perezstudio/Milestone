@@ -25,23 +25,23 @@ struct SidebarView: View {
 						Image(systemName: "tray.fill")
 					}
 				}
-				Label {
-					Text("Today")
-				} icon: {
-					Image(systemName: "calendar")
+				NavigationLink(destination: TodayView()) {
+					Label {
+						Text("Today")
+					} icon: {
+						Image(systemName: "calendar")
+					}
 				}
-				Label {
-					Text("Scheduled")
-				} icon: {
-					Image(systemName: "clock")
+				NavigationLink(destination: ScheduledView()) {
+					Label {
+						Text("Scheduled")
+					} icon: {
+						Image(systemName: "clock")
+					}
 				}
-				Label {
-					Text("All Issues")
-				} icon: {
-					Image(systemName: "list.bullet")
-				}
+				
 			}
-			Section(header: Text("Views")) {
+			Section(header: Text("Workspace")) {
 				NavigationLink(destination: ProjectListView()) {
 					Label {
 						Text("Projects")
@@ -49,11 +49,23 @@ struct SidebarView: View {
 						Image(systemName: "square.stack.fill")
 					}
 				}
+				NavigationLink(destination: AllIssuesView()) {
+					Label {
+						Text("Issues")
+					} icon: {
+						Image(systemName: "list.bullet")
+					}
+				}
 			}
 			Section("Favorite Projects") {
 				ForEach(projects) { project in
 					NavigationLink(destination: ProjectView(project: project)) {
-						Label(project.name, systemImage: "folder")
+						Label {
+							Text(project.name)
+						} icon: {
+							Image(systemName: project.icon)
+								.foregroundStyle(project.color.color)
+						}
 					}
 				}
 			}

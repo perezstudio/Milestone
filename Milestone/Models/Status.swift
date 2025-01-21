@@ -10,10 +10,52 @@ import SwiftData
 
 enum Status: String, Codable, CaseIterable {
 	case backlog, todo, inProgress, inReview, done, canceled
+	
+	var iconName: String {
+		switch self {
+		case .backlog: return "tray"
+		case .todo: return "checklist"
+		case .inProgress: return "arrow.right"
+		case .inReview: return "eye"
+		case .done: return "checkmark.circle"
+		case .canceled: return "xmark.circle"
+		}
+	}
+	
+	var color: Color {
+		switch self {
+		case .backlog: return .gray
+		case .todo: return .blue
+		case .inProgress: return .green
+		case .inReview: return .purple
+		case .done: return .green
+		case .canceled: return .red
+		}
+	}
 }
 
 enum Priority: String, Codable, CaseIterable {
     case urgent, high, medium, low, none
+	
+	var iconName: String {
+		switch self {
+		case .urgent: return "exclamationmark.3"
+		case .high: return "exclamationmark.2"
+		case .medium: return "exclamationmark"
+		case .low: return "arrow.down"
+		case .none: return "minus"
+		}
+	}
+	
+	var color: Color {
+		switch self {
+		case .urgent: return .red
+		case .high: return .orange
+		case .medium: return .yellow
+		case .low: return .blue
+		case .none: return .gray
+		}
+	}
 }
 
 enum SidebarItem: Hashable {

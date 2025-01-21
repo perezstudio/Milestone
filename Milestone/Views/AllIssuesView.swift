@@ -6,10 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AllIssuesView: View {
+	
+	@Query(sort: \Todo.id) var issues: [Todo]
     var body: some View {
-        Text("AllIssuesView")
+        List(issues) { issue in
+			Label {
+				Text(issue.title)
+			} icon: {
+				Image(systemName: issue.status.iconName)
+			}
+		}
     }
 }
 

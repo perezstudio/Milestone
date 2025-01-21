@@ -10,23 +10,14 @@ import SwiftData
 
 struct ContentView: View {
 	@Environment(\.modelContext) var modelContext
-	@State private var selectedSidebarItem: SidebarItem?
+	@State private var selectedProject: Project?
 	@State private var selectedTodo: Todo?
 	
 	var body: some View {
 		NavigationSplitView {
 			SidebarView()
-		} content: {
-//			TodoListView(
-//				todos: viewModel.filteredTodos,
-//				selectedTodo: $selectedTodo
-//			)
 		} detail: {
-			if let todo = selectedTodo {
-				Text("TodoView")
-			} else {
-				Text("Select a todo")
-			}
+			ProjectView(project: selectedProject ?? Project(name: "", icon: "", color: ProjectColor.blue, notes: "", favorite: false))
 		}
 	}
 }
