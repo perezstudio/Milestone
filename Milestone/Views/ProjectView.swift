@@ -6,20 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ProjectView: View {
-	@Bindable var project: Project
-	@State private var selectedView: ProjectSelectedView = .currentSprint  // Add default value
-	@State private var favoriteColor: Int = 0
+	@State private var viewModel: ProjectViewModel
+	
+	init(project: Project, modelContext: ModelContext) {
+		_viewModel = State(initialValue: ProjectViewModel(project: project, modelContext: modelContext))
+	}
 	
 	var body: some View {
 		NavigationStack {
 			VStack {
-				switch selectedView {
+				switch viewModel.selectedView {
 				case .currentSprint:
-					CurrentSprintView(project: project)
+					CurrentSprintView(viewModel: viewModel)
 				case .backlog:
-					BacklogView(project: project)
+					BacklogView(viewModel: viewModel)
 				case .roadmap:
 					RoadmapView()
 				case .releases:
@@ -28,10 +31,10 @@ struct ProjectView: View {
 					SettingsView()
 				}
 			}
-			.navigationTitle(project.name)
+			.navigationTitle(viewModel.project.name)
 			.toolbar {
 				ToolbarItem(placement: .principal) {
-					Picker("View", selection: $selectedView) {
+					Picker("View", selection: $viewModel.selectedView) {
 						ForEach(ProjectSelectedView.allCases, id: \.self) { view in
 							Label {
 								Text(view.viewName)
@@ -72,7 +75,18 @@ enum ProjectSelectedView: String, Codable, CaseIterable {
 	}
 }
 
-//#Preview {
-//	var testProject = Project(name: "Test Project", icon: "square.stack", color: ProjectColor.blue, notes: "", favorite: false)
-//	ProjectView(project: testProject)
-//}
+#Preview {
+	ProjectView(
+		project: Project(
+			name: "Test Project",
+			icon: "square.stack",
+			color: .blue,
+			notes: "",
+			favorite: false
+		),
+		modelContext: try! ModelContainer(
+			for: Project.self,
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		).mainContext
+	)
+}

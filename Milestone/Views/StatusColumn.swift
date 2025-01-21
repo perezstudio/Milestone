@@ -10,9 +10,10 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct StatusColumn: View {
-	@Bindable var sprint: Sprint
 	let status: Status
-	let todosByStatus: [Status: [Todo]]
+	let todos: [Todo]
+	let viewModel: ProjectViewModel
+	@State private var isDropTargeted = false
 	
 	var body: some View {
 		VStack(alignment: .leading) {
@@ -21,7 +22,7 @@ struct StatusColumn: View {
 				Image(systemName: status.iconName)
 					.foregroundStyle(status.color)
 				Text(status.rawValue.capitalized)
-				Text("\(todosByStatus[status]?.count ?? 0)")
+				Text("\(todos.count)")
 					.foregroundStyle(.secondary)
 			}
 			.font(.headline)
@@ -29,7 +30,7 @@ struct StatusColumn: View {
 			
 			// Droppable area
 			VStack(spacing: 8) {
-				ForEach(todosByStatus[status] ?? [], id: \.id) { todo in
+				ForEach(todos) { todo in
 					TodoCard(todo: todo)
 						.draggable(TodoTransferable(id: todo.id))
 				}
@@ -37,11 +38,14 @@ struct StatusColumn: View {
 			.frame(minHeight: 100)
 			.dropDestination(for: TodoTransferable.self) { items, location in
 				if let transferable = items.first,
-				   let todo = sprint.todos.first(where: { $0.id == transferable.id }) {
+				   let currentSprint = viewModel.currentSprint,
+				   let todo = currentSprint.todos.first(where: { $0.id == transferable.id }) {
 					todo.status = status
 					return true
 				}
 				return false
+			} isTargeted: { isTargeted in
+				isDropTargeted = isTargeted
 			}
 		}
 		.frame(width: 300)
@@ -50,4 +54,3 @@ struct StatusColumn: View {
 		.clipShape(RoundedRectangle(cornerRadius: 8))
 	}
 }
-

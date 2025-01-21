@@ -6,20 +6,19 @@
 //
 
 import SwiftUI
+import Observation
 
 struct CurrentSprintView: View {
-	let project: Project
+	let viewModel: ProjectViewModel
 	
 	var body: some View {
-		if let currentSprint = project.currentSprint {
-			// Show sprint details
-			SprintDetailsView(sprint: currentSprint)
+		if let currentSprint = viewModel.currentSprint {
+			SprintDetailsView(viewModel: viewModel)
 				.navigationTitle(currentSprint.title)
-			#if os(macOS)
-				.navigationSubtitle(project.name)
-			#endif
+				#if os(macOS)
+				.navigationSubtitle(viewModel.project.name)
+				#endif
 		} else {
-			// Show empty state or creation prompt
 			ContentUnavailableView(
 				"No Active Sprint",
 				systemImage: "calendar.badge.plus",
@@ -27,9 +26,8 @@ struct CurrentSprintView: View {
 			)
 			.navigationTitle("Current Sprint")
 			#if os(macOS)
-			.navigationSubtitle(project.name)
+			.navigationSubtitle(viewModel.project.name)
 			#endif
 		}
 	}
 }
-

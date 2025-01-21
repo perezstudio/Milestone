@@ -8,18 +8,19 @@
 import SwiftUI
 
 struct SprintListView: View {
+	@Bindable var viewModel: ProjectViewModel
 	
-	@Bindable var project: Project
-	
-    var body: some View {
+	var body: some View {
 		ScrollView {
 			VStack(spacing: 16) {
-				ForEach(project.sprints.filter { $0.status != .completed }) { sprint in
-					SprintCard(sprint: sprint, project: project)
+				ForEach(viewModel.sprints) { sprint in
+					SprintCard(sprint: sprint, viewModel: viewModel)
 				}
 			}
 			.padding()
 		}
 		.frame(width: 350)
-    }
+	}
 }
+
+

@@ -10,7 +10,7 @@ import SwiftData
 
 struct SprintCard: View {
 	@Bindable var sprint: Sprint
-	let project: Project
+	let viewModel: ProjectViewModel
 	@State private var isDropTargeted = false
 	
 	var body: some View {
@@ -53,23 +53,13 @@ struct SprintCard: View {
 								.foregroundStyle(.secondary)
 						)
 				)
-				.dropDestination(for: String.self) { items, location in
-					guard let uuidString = items.first,
-						  let uuid = UUID(uuidString: uuidString),
-						  let todo = project.todos.first(where: { $0.id == uuid }) else {
-						return false
+				.dropDestination(for: TodoTransferable.self) { items, location in
+					if let transferable = items.first,
+					   let todo = viewModel.project.todos.first(where: { $0.id == transferable.id }) {
+						viewModel.moveTodoToSprint(todo, sprint: sprint)
+						return true
 					}
-					
-					// Update relationships
-					todo.sprint = sprint
-					todo.status = .todo
-					
-					// If not already in the sprint's todos array, add it
-					if !sprint.todos.contains(where: { $0.id == todo.id }) {
-						sprint.todos.append(todo)
-					}
-					
-					return true
+					return false
 				} isTargeted: { isTargeted in
 					isDropTargeted = isTargeted
 				}

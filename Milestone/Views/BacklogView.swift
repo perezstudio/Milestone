@@ -3,15 +3,7 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct BacklogView: View {
-	let project: Project
-	@Environment(\.modelContext) private var modelContext
-	@StateObject private var viewModel: BacklogViewModel
-	
-	init(project: Project) {
-		self.project = project
-		// Initialize the view model without modelContext
-		self._viewModel = StateObject(wrappedValue: BacklogViewModel(project: project))
-	}
+	@Bindable var viewModel: ProjectViewModel
 	
 	var body: some View {
 		HStack(spacing: 0) {
@@ -39,7 +31,7 @@ struct BacklogView: View {
 			ScrollView {
 				VStack(spacing: 16) {
 					ForEach(viewModel.sprints) { sprint in
-						SprintCard(sprint: sprint, project: project)
+						SprintCard(sprint: sprint, viewModel: viewModel)
 					}
 				}
 				.padding()
@@ -63,17 +55,13 @@ struct BacklogView: View {
 			}
 		}
 		.sheet(isPresented: $viewModel.showCreateSprint) {
-			CreateSprintView(project: project)
+			CreateSprintView(viewModel: viewModel)
 		}
 		.sheet(isPresented: $viewModel.showCreateTodo) {
-			CreateIssueView(todo: $viewModel.selectedTodo, project: project)
+			CreateIssueView(viewModel: viewModel, editingTodo: nil)
 		}
 		.sheet(item: $viewModel.selectedTodo) { todo in
-			CreateIssueView(todo: $viewModel.selectedTodo, project: project)
-		}
-		.onAppear {
-			// Set the modelContext when the view appears
-			viewModel.setModelContext(modelContext)
+			CreateIssueView(viewModel: viewModel, editingTodo: todo)
 		}
 	}
 }

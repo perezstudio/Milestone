@@ -17,7 +17,7 @@ struct ContentView: View {
 		NavigationSplitView {
 			SidebarView()
 		} detail: {
-			ProjectView(project: selectedProject ?? Project(name: "", icon: "", color: ProjectColor.blue, notes: "", favorite: false))
+			ProjectView(project: selectedProject ?? Project(name: "", icon: "", color: ProjectColor.blue, notes: "", favorite: false), modelContext: modelContext)
 		}
 	}
 }
