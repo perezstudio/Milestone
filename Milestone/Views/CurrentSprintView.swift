@@ -15,7 +15,9 @@ struct CurrentSprintView: View {
 			// Show sprint details
 			SprintDetailsView(sprint: currentSprint)
 				.navigationTitle(currentSprint.title)
+			#if os(macOS)
 				.navigationSubtitle(project.name)
+			#endif
 		} else {
 			// Show empty state or creation prompt
 			ContentUnavailableView(
@@ -24,7 +26,9 @@ struct CurrentSprintView: View {
 				description: Text("Create a new sprint to start planning your work")
 			)
 			.navigationTitle("Current Sprint")
+			#if os(macOS)
 			.navigationSubtitle(project.name)
+			#endif
 		}
 	}
 }

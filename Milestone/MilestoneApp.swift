@@ -15,7 +15,7 @@ struct ProjectManagementApp: App {
 	init() {
 		do {
 			container = try ModelContainer(
-				for: Project.self, Todo.self, Release.self
+				for: Project.self, Todo.self, Release.self, Sprint.self
 			)
 		} catch {
 			fatalError("Failed to initialize ModelContainer: \(error)")

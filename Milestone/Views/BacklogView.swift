@@ -1,31 +1,16 @@
-//
-//  BacklogView.swift
-//  Milestone
-//
-//  Created by Kevin Perez on 1/21/25.
-//
-
 import SwiftUI
 import SwiftData
-import UniformTypeIdentifiers  // Add this import
+import UniformTypeIdentifiers
 
 struct BacklogView: View {
 	let project: Project
 	@Environment(\.modelContext) private var modelContext
-	@State private var searchText = ""
-	@State private var showCreateSprint = false
-	@State private var selectedTodo: Todo?
-	@State private var showCreateTodo = false
-	@State private var draggingTodo: Todo?
+	@StateObject private var viewModel: BacklogViewModel
 	
-	var filteredTodos: [Todo] {
-		if searchText.isEmpty {
-			return project.backlogTodos
-		} else {
-			return project.backlogTodos.filter { todo in
-				todo.title.localizedCaseInsensitiveContains(searchText)
-			}
-		}
+	init(project: Project) {
+		self.project = project
+		// Initialize the view model without modelContext
+		self._viewModel = StateObject(wrappedValue: BacklogViewModel(project: project))
 	}
 	
 	var body: some View {
@@ -33,7 +18,7 @@ struct BacklogView: View {
 			// Backlog Items
 			VStack {
 				List {
-					ForEach(filteredTodos) { todo in
+					ForEach(viewModel.filteredTodos) { todo in
 						TodoRow(todo: todo)
 							.listRowBackground(Color.clear)
 							.draggable(TodoTransferable(id: todo.id)) {
@@ -42,18 +27,18 @@ struct BacklogView: View {
 									.contentShape(Rectangle())
 							}
 							.onTapGesture {
-								selectedTodo = todo
+								viewModel.selectedTodo = todo
 							}
 					}
 				}
-				.searchable(text: $searchText, prompt: "Search backlog items")
+				.searchable(text: $viewModel.searchText, prompt: "Search backlog items")
 			}
 			.frame(maxWidth: .infinity)
 			
 			// Sprint List
 			ScrollView {
 				VStack(spacing: 16) {
-					ForEach(project.sprints.filter { $0.status != .completed }) { sprint in
+					ForEach(viewModel.sprints) { sprint in
 						SprintCard(sprint: sprint, project: project)
 					}
 				}
@@ -65,27 +50,30 @@ struct BacklogView: View {
 		.toolbar {
 			ToolbarItemGroup(placement: .primaryAction) {
 				Button {
-					showCreateTodo = true
+					viewModel.showCreateTodo = true
 				} label: {
 					Label("New Todo", systemImage: "plus")
 				}
 				
 				Button {
-					showCreateSprint = true
+					viewModel.showCreateSprint = true
 				} label: {
 					Label("New Sprint", systemImage: "calendar.badge.plus")
 				}
 			}
 		}
-		.sheet(isPresented: $showCreateSprint) {
+		.sheet(isPresented: $viewModel.showCreateSprint) {
 			CreateSprintView(project: project)
 		}
-		.sheet(isPresented: $showCreateTodo) {
-			CreateIssueView(todo: $selectedTodo, project: project)
+		.sheet(isPresented: $viewModel.showCreateTodo) {
+			CreateIssueView(todo: $viewModel.selectedTodo, project: project)
 		}
-		.sheet(item: $selectedTodo) { todo in
-			CreateIssueView(todo: $selectedTodo, project: project)
+		.sheet(item: $viewModel.selectedTodo) { todo in
+			CreateIssueView(todo: $viewModel.selectedTodo, project: project)
+		}
+		.onAppear {
+			// Set the modelContext when the view appears
+			viewModel.setModelContext(modelContext)
 		}
 	}
 }
-
