@@ -11,15 +11,17 @@ import Foundation
 import CoreTransferable
 import UniformTypeIdentifiers
 
-struct TodoTransferable: Transferable, Codable {
+struct TodoTransferable: Transferable {
 	let id: UUID
 	
 	static var transferRepresentation: some TransferRepresentation {
-		CodableRepresentation(for: TodoTransferable.self, contentType: .todo)
+		ProxyRepresentation(exporting: { todoTransferable in
+			todoTransferable.id.uuidString
+		})
 	}
 }
 
 extension UTType {
-	static let todo = UTType(exportedAs: "com.your.app.todo",
+	static let todo = UTType(exportedAs: "com.milestone.todo",
 							conformingTo: .data)
 }

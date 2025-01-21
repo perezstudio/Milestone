@@ -14,6 +14,8 @@ struct CurrentSprintView: View {
 		if let currentSprint = project.currentSprint {
 			// Show sprint details
 			SprintDetailsView(sprint: currentSprint)
+				.navigationTitle(currentSprint.title)
+				.navigationSubtitle(project.name)
 		} else {
 			// Show empty state or creation prompt
 			ContentUnavailableView(
@@ -21,6 +23,8 @@ struct CurrentSprintView: View {
 				systemImage: "calendar.badge.plus",
 				description: Text("Create a new sprint to start planning your work")
 			)
+			.navigationTitle("Current Sprint")
+			.navigationSubtitle(project.name)
 		}
 	}
 }

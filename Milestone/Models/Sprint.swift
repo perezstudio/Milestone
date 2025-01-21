@@ -16,7 +16,7 @@ final class Sprint {
 	var endDate: Date
 	var isActive: Bool
 	var status: SprintStatus
-	@Relationship var todos: [Todo]
+	@Relationship(inverse: \Todo.sprint) var todos: [Todo]
 	@Relationship(inverse: \Project.sprints) var project: Project
 	
 	var progressPercentage: Double {

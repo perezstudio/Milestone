@@ -19,7 +19,7 @@ struct ProjectView: View {
 				case .currentSprint:
 					CurrentSprintView(project: project)
 				case .backlog:
-					BacklogView()
+					BacklogView(project: project)
 				case .roadmap:
 					RoadmapView()
 				case .releases:
@@ -30,17 +30,19 @@ struct ProjectView: View {
 			}
 			.navigationTitle(project.name)
 			.toolbar {
-				Picker("View", selection: $selectedView) {
-					ForEach(ProjectSelectedView.allCases, id: \.self) { view in
-						Label {
-							Text(view.viewName)
-						} icon: {
-							Image(systemName: view.viewIcon)
+				ToolbarItem(placement: .principal) {
+					Picker("View", selection: $selectedView) {
+						ForEach(ProjectSelectedView.allCases, id: \.self) { view in
+							Label {
+								Text(view.viewName)
+							} icon: {
+								Image(systemName: view.viewIcon)
+							}
+							.tag(view)
 						}
-						.tag(view)
 					}
+					.pickerStyle(.segmented)
 				}
-				.pickerStyle(.segmented)
 			}
 		}
 	}

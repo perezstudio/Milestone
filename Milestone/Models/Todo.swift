@@ -17,6 +17,7 @@ final class Todo {
 	var priority: Priority
 	var dueDate: Date?
 	@Relationship var release: Release?
+	@Relationship var sprint: Sprint?
 	@Relationship(inverse: \Project.todos) var project: Project
 	
 	var isOverdue: Bool {
@@ -29,9 +30,15 @@ final class Todo {
 		return Calendar.current.isDateInToday(dueDate)
 	}
 	
-	init(id: UUID = UUID(), title: String, notes: String, status: Status = .backlog,
-		 priority: Priority = .none, dueDate: Date? = nil,
-		 release: Release? = nil, project: Project) {
+	init(id: UUID = UUID(),
+		 title: String,
+		 notes: String,
+		 status: Status = .backlog,
+		 priority: Priority = .none,
+		 dueDate: Date? = nil,
+		 release: Release? = nil,
+		 sprint: Sprint? = nil,
+		 project: Project) {
 		self.id = id
 		self.title = title
 		self.notes = notes
@@ -39,6 +46,7 @@ final class Todo {
 		self.priority = priority
 		self.dueDate = dueDate
 		self.release = release
+		self.sprint = sprint
 		self.project = project
 	}
 }
