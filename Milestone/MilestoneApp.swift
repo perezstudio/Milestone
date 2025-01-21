@@ -9,24 +9,23 @@ import SwiftUI
 import SwiftData
 
 @main
-struct MilestoneApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .modelContainer(sharedModelContainer)
-    }
+struct ProjectManagementApp: App {
+	let container: ModelContainer
+	
+	init() {
+		do {
+			container = try ModelContainer(
+				for: Project.self, Todo.self, Release.self
+			)
+		} catch {
+			fatalError("Failed to initialize ModelContainer: \(error)")
+		}
+	}
+	
+	var body: some Scene {
+		WindowGroup {
+			ContentView()
+		}
+		.modelContainer(container)
+	}
 }
