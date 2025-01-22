@@ -9,9 +9,24 @@ import SwiftUI
 import SwiftData
 
 struct TodoDetailsView: View {
-    @Environment(\.dismiss) private var dismiss
-    let viewModel: ProjectViewModel
-    @Bindable var todo: Todo
+	@Environment(\.dismiss) private var dismissAction
+	@EnvironmentObject private var appState: AppState
+	let viewModel: ProjectViewModel
+	@Bindable var todo: Todo
+	
+	private var isInInspector: Bool {
+		appState.selectedTodo?.id == todo.id && appState.showInspector
+	}
+	
+	private func handleDelete() {
+		viewModel.deleteTodo(todo)
+		if isInInspector {
+			appState.selectedTodo = nil  // Clear selection
+			appState.showInspector = false  // Close inspector
+		} else {
+			dismissAction()  // Dismiss sheet/modal
+		}
+	}
     
     var body: some View {
         List {
@@ -108,16 +123,15 @@ struct TodoDetailsView: View {
                 .frame(minHeight: 100)
             }
         }
-        .navigationTitle("Details")
-        .toolbar {
-            ToolbarItem(placement: .destructiveAction) {
-                Button(role: .destructive) {
-                    viewModel.deleteTodo(todo)
-                    dismiss()
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
-            }
-        }
+		.navigationTitle("Details")
+		.toolbar {
+			ToolbarItemGroup(placement: .destructiveAction) {
+				Button(role: .destructive) {
+					handleDelete()
+				} label: {
+					Label("Delete", systemImage: "trash")
+				}
+			}
+		}
     }
 }
