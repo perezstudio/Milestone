@@ -23,7 +23,7 @@ struct BacklogView: View {
 							}
 					}
 				}
-				.searchable(text: $viewModel.searchText, prompt: "Search backlog items")
+				.searchable(text: $viewModel.searchText, placement: .sidebar, prompt: "Search backlog items")
 			}
 			.frame(maxWidth: .infinity)
 			
@@ -39,8 +39,9 @@ struct BacklogView: View {
 			.frame(width: 350)
 		}
 		.navigationTitle("Backlog")
+		.navigationSubtitle(viewModel.project.name)
 		.toolbar {
-			ToolbarItemGroup(placement: .primaryAction) {
+			ToolbarItemGroup(placement: .automatic) {
 				Button {
 					viewModel.showCreateTodo = true
 				} label: {
@@ -59,9 +60,6 @@ struct BacklogView: View {
 		}
 		.sheet(isPresented: $viewModel.showCreateTodo) {
 			CreateIssueView(viewModel: viewModel, editingTodo: nil)
-		}
-		.sheet(item: $viewModel.selectedTodo) { todo in
-			CreateIssueView(viewModel: viewModel, editingTodo: todo)
 		}
 	}
 }

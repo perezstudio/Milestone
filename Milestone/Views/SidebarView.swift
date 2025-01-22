@@ -9,57 +9,41 @@ import SwiftUI
 import SwiftData
 
 struct SidebarView: View {
+	@Environment(\.modelContext) private var modelContext
+	@Query(filter: #Predicate<Project> { project in
+		project.favorite == true
+	}, sort: \Project.name) private var favoriteProjects: [Project]
 	
-	@Query(sort: \Project.name) private var projects: [Project]
-	@State private var project: Project? = nil
-	@State var createProjectSheet = false
-	@State var createIssueSheet = false
+	@Binding var selection: SidebarItem?
+	@State private var createProjectSheet = false
+	@State private var createIssueSheet = false
+	@State private var editingProject: Project?
 	
 	var body: some View {
-		List {
+		List(selection: $selection) {
 			Section {
-				NavigationLink(destination: InboxView()) {
-					Label {
-						Text("Inbox")
-					} icon: {
-						Image(systemName: "tray.fill")
-					}
-				}
-				NavigationLink(destination: TodayView()) {
-					Label {
-						Text("Today")
-					} icon: {
-						Image(systemName: "calendar")
-					}
-				}
-				NavigationLink(destination: ScheduledView()) {
-					Label {
-						Text("Scheduled")
-					} icon: {
-						Image(systemName: "clock")
-					}
+				NavigationLink(value: SidebarItem.inbox) {
+					Label("Inbox", systemImage: "tray.fill")
 				}
 				
-			}
-			Section(header: Text("Workspace")) {
-				NavigationLink(destination: ProjectListView()) {
-					Label {
-						Text("Projects")
-					} icon: {
-						Image(systemName: "square.stack.fill")
-					}
+				NavigationLink(value: SidebarItem.today) {
+					Label("Today", systemImage: "calendar")
 				}
-				NavigationLink(destination: AllIssuesView()) {
-					Label {
-						Text("Issues")
-					} icon: {
-						Image(systemName: "list.bullet")
-					}
+				
+				NavigationLink(value: SidebarItem.scheduled) {
+					Label("Scheduled", systemImage: "clock")
 				}
 			}
+			
+			Section("Workspace") {
+				NavigationLink(value: SidebarItem.allIssues) {
+					Label("All Issues", systemImage: "list.bullet")
+				}
+			}
+			
 			Section("Favorite Projects") {
-				ForEach(projects) { project in
-					NavigationLink(destination: ProjectView(project: project)) {
+				ForEach(favoriteProjects) { project in
+					NavigationLink(value: SidebarItem.project(project)) {
 						Label {
 							Text(project.name)
 						} icon: {
@@ -73,47 +57,33 @@ struct SidebarView: View {
 		.navigationTitle("Milestone")
 		.toolbar {
 			ToolbarItemGroup(placement: .primaryAction) {
-				Spacer()
 				Menu {
-					Section {
-						Button {
-							createProjectSheet.toggle()
-						} label: {
-							Label {
-								Text("Add Project")
-							} icon: {
-								Image(systemName: "rectangle.stack.badge.plus")
-							}
-						}
-						Button {
-							
-						} label: {
-							Label {
-								Text("Add Issue")
-							} icon: {
-								Image(systemName: "plus.app")
-							}
-						}
+					Button {
+						createProjectSheet.toggle()
+					} label: {
+						Label("New Project", systemImage: "folder.badge.plus")
+					}
+					
+					Button {
+						createIssueSheet.toggle()
+					} label: {
+						Label("New Issue", systemImage: "plus.app")
 					}
 				} label: {
-					Button {
-						
-					} label: {
-						Label {
-							Text("Add")
-						} icon: {
-							Image(systemName: "plus")
-						}
-					}
+					Image(systemName: "plus")
 				}
 			}
 		}
 		.sheet(isPresented: $createProjectSheet) {
-			CreateProjectView(project: $project)
+			CreateProjectView(project: $editingProject)
+		}
+		.sheet(isPresented: $createIssueSheet) {
+			if let project = favoriteProjects.first {
+				CreateIssueView(
+					viewModel: ProjectViewModel(project: project, modelContext: modelContext),
+					editingTodo: nil
+				)
+			}
 		}
 	}
-}
-
-#Preview {
-	SidebarView()
 }

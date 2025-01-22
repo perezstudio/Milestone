@@ -9,15 +9,19 @@ import SwiftUI
 import SwiftData
 
 struct ProjectListView: View {
-	
 	@Environment(\.modelContext) var modelContext
-	@Query(sort: \Project.id) private var projects: [Project]
+	@EnvironmentObject private var appState: AppState
+	@Query(sort: \Project.name) private var projects: [Project]
 	
-    var body: some View {
+	var body: some View {
 		NavigationStack {
 			List {
 				ForEach(projects) { project in
-					NavigationLink(destination: ProjectView(project: project, modelContext: modelContext)) {
+					NavigationLink(destination: ProjectView(
+						project: project,
+						modelContext: modelContext,
+						appState: appState
+					)) {
 						Label {
 							Text(project.name)
 						} icon: {
@@ -28,9 +32,11 @@ struct ProjectListView: View {
 			}
 			.navigationTitle("Projects")
 		}
-    }
+	}
 }
 
 #Preview {
-    ProjectListView()
+	ProjectListView()
+		.modelContainer(for: Project.self, inMemory: true)
+		.environmentObject(AppState())
 }

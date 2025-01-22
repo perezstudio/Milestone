@@ -10,43 +10,54 @@ import SwiftData
 
 struct ProjectView: View {
 	@State private var viewModel: ProjectViewModel
+	@ObservedObject var appState: AppState
 	
-	init(project: Project, modelContext: ModelContext) {
+	init(project: Project, modelContext: ModelContext, appState: AppState) {
 		_viewModel = State(initialValue: ProjectViewModel(project: project, modelContext: modelContext))
+		self.appState = appState
 	}
 	
 	var body: some View {
 		NavigationStack {
-			VStack {
-				switch viewModel.selectedView {
-				case .currentSprint:
-					CurrentSprintView(viewModel: viewModel)
-				case .backlog:
-					BacklogView(viewModel: viewModel)
-				case .roadmap:
-					RoadmapView()
-				case .releases:
-					ReleasesView()
-				case .settings:
-					SettingsView()
-				}
-			}
-			.navigationTitle(viewModel.project.name)
-			.toolbar {
-				ToolbarItem(placement: .principal) {
-					Picker("View", selection: $viewModel.selectedView) {
-						ForEach(ProjectSelectedView.allCases, id: \.self) { view in
-							Label {
-								Text(view.viewName)
-							} icon: {
-								Image(systemName: view.viewIcon)
+			mainContent
+				.navigationTitle(viewModel.project.name)
+				.toolbar {
+					ToolbarItem(placement: .principal) {
+						Picker("View", selection: $viewModel.selectedView) {
+							ForEach(ProjectSelectedView.allCases, id: \.self) { view in
+								Label {
+									Text(view.viewName)
+								} icon: {
+									Image(systemName: view.viewIcon)
+								}
+								.tag(view)
 							}
-							.tag(view)
 						}
+						.pickerStyle(.segmented)
 					}
-					.pickerStyle(.segmented)
 				}
+		}
+		.onChange(of: viewModel.selectedTodo) { oldValue, newValue in
+			appState.selectedTodo = newValue
+			if newValue != nil && !appState.showInspector {
+				appState.showInspector = true
 			}
+		}
+	}
+	
+	@ViewBuilder
+	private var mainContent: some View {
+		switch viewModel.selectedView {
+		case .currentSprint:
+			CurrentSprintView(viewModel: viewModel)
+		case .backlog:
+			BacklogView(viewModel: viewModel)
+		case .roadmap:
+			RoadmapView()
+		case .releases:
+			ReleasesView()
+		case .settings:
+			SettingsView()
 		}
 	}
 }
@@ -73,20 +84,4 @@ enum ProjectSelectedView: String, Codable, CaseIterable {
 		case .settings: return "gear"
 		}
 	}
-}
-
-#Preview {
-	ProjectView(
-		project: Project(
-			name: "Test Project",
-			icon: "square.stack",
-			color: .blue,
-			notes: "",
-			favorite: false
-		),
-		modelContext: try! ModelContainer(
-			for: Project.self,
-			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-		).mainContext
-	)
 }
