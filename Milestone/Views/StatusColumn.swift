@@ -13,6 +13,7 @@ struct StatusColumn: View {
 	let status: Status
 	let todos: [Todo]
 	let viewModel: ProjectViewModel
+	@EnvironmentObject private var appState: AppState
 	@State private var isDropTargeted = false
 	
 	var body: some View {
@@ -32,6 +33,9 @@ struct StatusColumn: View {
 			VStack(spacing: 8) {
 				ForEach(todos) { todo in
 					TodoCard(todo: todo)
+						.onTapGesture {
+							appState.selectTodo(todo)
+						}
 						.draggable(TodoTransferable(id: todo.id))
 				}
 			}

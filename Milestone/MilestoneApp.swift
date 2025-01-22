@@ -8,12 +8,6 @@
 import SwiftUI
 import SwiftData
 
-class AppState: ObservableObject {
-	@Published var showInspector = true
-	@Published var selectedTodo: Todo?
-	@Published var currentProject: Project?
-}
-
 @main
 struct ProjectManagementApp: App {
 	let container: ModelContainer

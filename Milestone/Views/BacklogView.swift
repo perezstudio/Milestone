@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 struct BacklogView: View {
 	@Bindable var viewModel: ProjectViewModel
+	@EnvironmentObject private var appState: AppState
 	
 	var body: some View {
 		HStack(spacing: 0) {
@@ -12,14 +13,14 @@ struct BacklogView: View {
 				List {
 					ForEach(viewModel.filteredTodos) { todo in
 						TodoRow(todo: todo)
+							.onTapGesture {
+								appState.selectTodo(todo)
+							}
 							.listRowBackground(Color.clear)
 							.draggable(TodoTransferable(id: todo.id)) {
 								TodoRow(todo: todo)
 									.frame(width: 300)
 									.contentShape(Rectangle())
-							}
-							.onTapGesture {
-								viewModel.selectedTodo = todo
 							}
 					}
 				}
