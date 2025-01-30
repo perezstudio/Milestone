@@ -2,119 +2,97 @@
 //  CreateProjectView.swift
 //  Milestone
 //
-//  Created by Kevin Perez on 1/20/25.
+//  Created by Kevin Perez on 1/26/25.
 //
 
 import SwiftUI
 
 struct CreateProjectView: View {
-	@Environment(\.dismiss) private var dismiss
-	@Environment(\.modelContext) private var modelContext
-	@Binding var project: Project?
 	
-	@State private var name: String = ""
-	@State private var icon: String = "folder"
-	@State private var color: ProjectColor = .blue
-	@State private var notes: String = ""
-	@State private var favorite: Bool = false
-	@State private var showIconPicker = false
+	@Environment(\.modelContext) var modelContext
+	@Environment(\.dismiss) var dismiss
+	@State var projectName: String = ""
+	@State var projectIcon: String = "square.stack"
+	@State var projectColor: ProjectColor = .blue
+	@State var projectPriority: Priority = .none
+	@State var projectNotes: String = ""
+	@State var projectFavorite: Bool = false
 	
-	private var isEditing: Bool {
-		project != nil
-	}
+	let columns = [
+		GridItem(.flexible()),
+		GridItem(.flexible()),
+		GridItem(.flexible()),
+		GridItem(.flexible())
+	]
 	
-	var body: some View {
+    var body: some View {
 		NavigationStack {
 			Form {
 				Section {
-					TextField("Project Name", text: $name)
-					Toggle("Favorite", isOn: $favorite)
+					TextField("Project Name", text: $projectName)
+					Toggle("Favorite", isOn: $projectFavorite)
 				}
-				
 				Section {
-					Button {
-						showIconPicker = true
-					} label: {
-						HStack {
-							Text("Icon")
-							Spacer()
-							Image(systemName: icon)
-								.foregroundStyle(color.color)
-						}
-					}
-					
-					Picker("Color", selection: $color) {
-						ForEach(ProjectColor.allCases, id: \.self) { projectColor in
-							Label {
-								Text(projectColor.rawValue.capitalized)
-							} icon: {
-								Circle()
-									.fill(projectColor.color)
-									.frame(width: 20, height: 20)
+					HStack {
+						Text("Color")
+						LazyVGrid(columns: columns, spacing: 16) {
+							ForEach(ProjectColor.allCases) { color in
+								Button {
+									projectColor = color
+								} label: {
+									Circle()
+										.foregroundStyle(color.color)
+										.frame(width: 40, height: 40)
+										.accessibilityLabel(Text(color.rawValue.capitalized))
+								}
 							}
-							.tag(projectColor)
+						}
+						.frame(maxWidth: .infinity)
+					}
+					Picker("Priority", selection: $projectPriority) {
+						ForEach(Priority.allCases, id: \.self) { priority in
+							Label {
+								Text(priority.rawValue.capitalized)
+							} icon: {
+								Image(systemName: priority.iconName)
+							}
+							.tag(priority)
 						}
 					}
+					.pickerStyle(.segmented)
 				}
-				
-				Section("Notes") {
-					TextEditor(text: $notes)
-						.frame(minHeight: 100)
+				Section {
+					TextField("Notes", text: $projectNotes, axis: .vertical)
 				}
 			}
-			.padding()
-			.navigationTitle(isEditing ? "Edit Project" : "New Project")
+			.formStyle(.grouped)
+			.navigationTitle("Create Project")
 			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") {
-						dismiss()
-					}
-				}
-				
 				ToolbarItem(placement: .confirmationAction) {
-					Button(isEditing ? "Save" : "Create") {
-						if isEditing {
-							updateProject()
-						} else {
-							createProject()
-						}
+					Button {
+						let newProject = Project(name: projectName, icon: projectIcon, color: projectColor, priority: projectPriority, notes: projectNotes, favorite: projectFavorite)
+						modelContext.insert(newProject)
 						dismiss()
+					} label: {
+						Label {
+							Text("Create Project")
+						} icon: {
+							Image(systemName: "plus")
+						}
 					}
-					.disabled(name.isEmpty)
+				}
+				ToolbarItem(placement: .destructiveAction) {
+					Button {
+						dismiss()
+					} label: {
+						Text("Cancel")
+					}
 				}
 			}
-			.sheet(isPresented: $showIconPicker) {
-				IconPickerView(selectedIcon: $icon)
-			}
 		}
-		.onAppear {
-			if let project = project {
-				name = project.name
-				icon = project.icon
-				color = project.color
-				notes = project.notes
-				favorite = project.favorite
-			}
-		}
-	}
-	
-	private func createProject() {
-		let newProject = Project(
-			name: name,
-			icon: icon,
-			color: color,
-			notes: notes,
-			favorite: favorite
-		)
-		modelContext.insert(newProject)
-	}
-	
-	private func updateProject() {
-		guard let existingProject = project else { return }
-		existingProject.name = name
-		existingProject.icon = icon
-		existingProject.color = color
-		existingProject.notes = notes
-		existingProject.favorite = favorite
-	}
+    }
+}
+
+#Preview {
+    CreateProjectView()
 }

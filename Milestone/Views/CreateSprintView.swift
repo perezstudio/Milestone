@@ -2,52 +2,55 @@
 //  CreateSprintView.swift
 //  Milestone
 //
-//  Created by Kevin Perez on 1/21/25.
+//  Created by Kevin Perez on 1/28/25.
 //
 
 import SwiftUI
-import SwiftData
 
 struct CreateSprintView: View {
-	@Environment(\.dismiss) private var dismiss
-	let viewModel: ProjectViewModel
 	
-	@State private var title = ""
-	@State private var startDate = Date()
-	@State private var endDate = Date().addingTimeInterval(60 * 60 * 24 * 14) // 2 weeks
+	@State var sprintName: String = ""
+	@State var startDate: Date = Date()
+	@State var endDate: Date = Date()
+	@State var status: SprintStatus = .planning
 	
-	var body: some View {
+    var body: some View {
 		NavigationStack {
 			Form {
-				TextField("Sprint Title", text: $title)
-				DatePicker("Start Date", selection: $startDate, displayedComponents: [.date])
-				DatePicker("End Date", selection: $endDate, displayedComponents: [.date])
-			}
-			.navigationTitle("New Sprint")
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") {
-						dismiss()
+				TextField("Sprint Name", text: $sprintName)
+				DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+					.datePickerStyle(.field)
+				DatePicker("End Date", selection: $endDate, displayedComponents: .date)
+					.datePickerStyle(.field)
+				Picker("Status", selection: $status) {
+					ForEach(SprintStatus.allCases, id: \.self) { status in
+						Label(status.rawValue.capitalized, systemImage: status.iconName).tag(status)
 					}
 				}
-				
+			}
+			.padding()
+			.navigationTitle("Create Sprint")
+			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Create") {
-						createSprint()
-						dismiss()
+					Button {
+						
+					} label: {
+						Label("Create Sprint", systemImage: "calendar.badge.plus")
 					}
-					.disabled(title.isEmpty)
+				}
+				ToolbarItem(placement: .destructiveAction) {
+					Button {
+						
+					} label: {
+						Label("Cancel", systemImage: "xmark.circle.fill")
+							.labelStyle(.titleOnly)
+					}
 				}
 			}
 		}
-		.frame(minWidth: 400, minHeight: 250)
-	}
-	
-	private func createSprint() {
-		viewModel.createSprint(
-			title: title,
-			startDate: startDate,
-			endDate: endDate
-		)
-	}
+    }
+}
+
+#Preview {
+    CreateSprintView()
 }

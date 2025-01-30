@@ -16,13 +16,13 @@ final class Sprint {
 	var endDate: Date
 	var isActive: Bool
 	var status: SprintStatus
-	@Relationship(inverse: \Todo.sprint) var todos: [Todo]
+	@Relationship(inverse: \Issue.sprint) var issues: [Issue]
 	@Relationship(inverse: \Project.sprints) var project: Project
 	
 	var progressPercentage: Double {
-		guard !todos.isEmpty else { return 0 }
-		let completedTodos = todos.filter { $0.status == .done }
-		return Double(completedTodos.count) / Double(todos.count) * 100
+		guard !issues.isEmpty else { return 0 }
+		let completedIssues = issues.filter { $0.status == .done }
+		return Double(completedIssues.count) / Double(issues.count) * 100
 	}
 	
 	var isOverdue: Bool {
@@ -39,7 +39,7 @@ final class Sprint {
 		 endDate: Date,
 		 isActive: Bool = false,
 		 status: SprintStatus = .planning,
-		 todos: [Todo] = [],
+		 issues: [Issue] = [],
 		 project: Project) {
 		self.id = id
 		self.title = title
@@ -47,7 +47,7 @@ final class Sprint {
 		self.endDate = endDate
 		self.isActive = isActive
 		self.status = status
-		self.todos = todos
+		self.issues = issues
 		self.project = project
 	}
 }

@@ -9,53 +9,68 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-	@Environment(\.modelContext) var modelContext
-	@EnvironmentObject private var appState: AppState
-	@State private var selectedSidebarItem: SidebarItem?
+	
+	@Environment(\.modelContext) private var modelContext
+	@Bindable var appState: AppState
+	@State private var selectedTab: TabSelection = TabSelection.today
+	@Query(filter: #Predicate<Project> { project in
+		project.favorite == true
+	}) var favoriteProjects: [Project]
 	
 	var body: some View {
-		NavigationSplitView {
-			SidebarView(selection: $selectedSidebarItem)
-		} detail: {
-			if case .project(let project) = selectedSidebarItem {
-				ProjectView(
-					project: project,
-					modelContext: modelContext,
-					appState: appState
-				)
-			} else {
-				switch selectedSidebarItem {
-				case .inbox:
-					InboxView()
-				case .today:
-					TodayView()
-				case .scheduled:
-					ScheduledView()
-				case .allIssues:
+		TabView(selection: $selectedTab) {
+			// Main Tabs
+			Tab("Inbox", systemImage: "tray.and.arrow.down.fill", value: TabSelection.inbox) {
+				InboxView()
+			}
+			Tab("Today", systemImage: "star.fill", value: TabSelection.today) {
+				TodayView()
+			}
+			Tab("Scheduled", systemImage: "calendar", value: TabSelection.scheduled) {
+				ScheduledIssueView()
+			}
+			
+			// First Section
+			TabSection("Record Types") {
+				Tab("All Projects", systemImage: "square.stack", value: TabSelection.allProjects) {
+					AllProjectsView()
+				}
+				Tab("All Issues", systemImage: "checklist", value: TabSelection.allIssues) {
 					AllIssuesView()
-				case .none:
-					ContentUnavailableView(
-						"No Selection",
-						systemImage: "sidebar.left",
-						description: Text("Select an item from the sidebar")
-					)
-				default:
-					EmptyView()
+				}
+			}
+			
+			// Projects Section with Dynamic Tabs
+			TabSection("Favorite Projects") {
+				ForEach(favoriteProjects) { project in
+					Tab(project.name, systemImage: project.icon, value: TabSelection.project(project.id)) {
+						ProjectDetailView(project: project)
+					}
 				}
 			}
 		}
-		.onChange(of: selectedSidebarItem) { oldValue, newValue in
-			if case .project(let project) = newValue {
-				appState.currentProject = project
-			} else {
-				appState.currentProject = nil
-			}
+		.tabViewStyle(.sidebarAdaptable)
+		.sheet(isPresented: $appState.showCreateIssueWindow) {
+			CreateIssueForm()
 		}
 	}
 }
 
 #Preview {
-	ContentView()
+	
+	let appState = AppState()
+	
+	ContentView(appState: appState)
 		.modelContainer(for: Project.self, inMemory: true)
-		.environmentObject(AppState())
+		.environment(appState)
+}
+
+enum TabSelection: Hashable {
+	case inbox
+	case today
+	case scheduled
+	case allIssues
+	case allProjects
+	case favorites
+	case project(UUID)
 }

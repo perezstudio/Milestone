@@ -11,42 +11,34 @@ import SwiftData
 @main
 struct ProjectManagementApp: App {
 	let container: ModelContainer
-	@StateObject private var appState = AppState()
-	
+	@State private var appState = AppState()
+
 	init() {
 		do {
 			container = try ModelContainer(
-				for: Project.self, Todo.self, Release.self, Sprint.self
+				for: Project.self, Issue.self, Sprint.self
 			)
 		} catch {
 			fatalError("Failed to initialize ModelContainer: \(error)")
 		}
 	}
-	
+
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
-				.environmentObject(appState)
+			ContentView(appState: appState)
+				.environment(appState) // Use .environment to share AppState
 				.inspector(isPresented: $appState.showInspector) {
-					if let selectedTodo = appState.selectedTodo {
-						if let project = appState.currentProject {
-							TodoDetailsView(
-								viewModel: ProjectViewModel(
-									project: project,
-									modelContext: container.mainContext
-								),
-								todo: selectedTodo
-							)
+					if let issue = appState.selectedIssue {
+						IssueDetailsView(issue: issue)
 							.inspectorColumnWidth(min: 250, ideal: 300, max: 400)
 							.toolbar {
 								Spacer()
 								Button {
-									appState.showInspector.toggle()
+									appState.toggleInspector()
 								} label: {
 									Label("Toggle Inspector", systemImage: "sidebar.right")
 								}
 							}
-						}
 					} else {
 						ContentUnavailableView(
 							"No Selection",
@@ -57,7 +49,7 @@ struct ProjectManagementApp: App {
 						.toolbar {
 							Spacer()
 							Button {
-								appState.showInspector.toggle()
+								appState.toggleInspector()
 							} label: {
 								Label("Toggle Inspector", systemImage: "sidebar.right")
 							}
@@ -66,5 +58,6 @@ struct ProjectManagementApp: App {
 				}
 				.modelContainer(container)
 		}
+
 	}
 }

@@ -1,8 +1,8 @@
 //
-//  Status.swift
+//  Enums.swift
 //  Milestone
 //
-//  Created by Kevin Perez on 1/20/25.
+//  Created by Kevin Perez on 1/24/25.
 //
 
 import SwiftUI
@@ -35,7 +35,7 @@ enum Status: String, Codable, CaseIterable {
 }
 
 enum Priority: String, Codable, CaseIterable {
-    case urgent, high, medium, low, none
+	case urgent, high, medium, low, none
 	
 	var iconName: String {
 		switch self {
@@ -66,7 +66,9 @@ enum SidebarItem: Hashable {
 	case project(Project) // Include a project if applicable
 }
 
-enum ProjectColor: String, Codable, CaseIterable {
+enum ProjectColor: String, Codable, CaseIterable, Identifiable {
+	var id: String { self.rawValue }
+	
 	case red, orange, yellow, green, blue, indigo, purple
 	
 	var color: Color {
@@ -115,6 +117,31 @@ enum ProjectColor: String, Codable, CaseIterable {
 			return "Indigo"
 		case .purple:
 			return "Purple"
+		}
+	}
+}
+
+enum selectedViewType: String, Codable, CaseIterable {
+	case none, projectList, inboxView, TodayView, ScheduledView, issueList
+}
+
+enum ProjectSelectedView: String, Codable, CaseIterable, Identifiable {
+	case board, backlog, roadmap, sprint, setting
+	
+	var id: String { self.rawValue }
+	
+	var iconName: String {
+		switch self {
+		case .board:
+			return "square.grid.3x2"
+		case .backlog:
+			return "list.bullet"
+		case .roadmap:
+			return "map"
+		case .sprint:
+			return "calendar"
+		case .setting:
+			return "gear"
 		}
 	}
 }
