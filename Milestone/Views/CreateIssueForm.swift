@@ -13,16 +13,29 @@ struct CreateIssueForm: View {
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) private var modelContext
 	@Query(sort: \Project.id) var projects: [Project]
-    @State private var issueTitle: String = ""
-    @State private var issueDescription: String = ""
+	
+	// Add optional ViewModel for project context
+	var viewModel: ProjectDetailViewModel?
+	
+	@State private var issueTitle: String = ""
+	@State private var issueDescription: String = ""
 	@State private var dueDatePopover: Bool = false
 	@State private var dueDate: Date? = nil
 	@State private var priorityPopover: Bool = false
 	@State private var issuePriority: Priority = .none
 	@State private var projectPopover: Bool = false
-	@State private var issueProject: Project? = nil
+	// Initialize with project if ViewModel is provided
+	@State private var issueProject: Project?
 	@State private var statusPopover: Bool = false
 	@State private var issueStatus: Status = .backlog
+	
+	init(viewModel: ProjectDetailViewModel? = nil) {
+		self.viewModel = viewModel
+		// If viewModel is provided, set the initial project
+		if let project = viewModel?.project {
+			_issueProject = State(initialValue: project)
+		}
+	}
 
     var body: some View {
         VStack(spacing: 16) {
@@ -164,18 +177,31 @@ struct CreateIssueForm: View {
 	func createIssue() {
 		// Basic validation
 		guard !issueTitle.isEmpty else { return }
-		guard let project = issueProject else { return } // Validate project exists
 		
-		let newIssue = Issue(
-			title: issueTitle,
-			notes: issueDescription,
-			status: issueStatus,
-			priority: issuePriority,
-			dueDate: dueDate,
-			sprint: nil,
-			project: project // Now we can safely pass the unwrapped project
-		)
+		if let viewModel = viewModel {
+			// Use ViewModel's createIssue when in project context
+			viewModel.createIssue(
+				title: issueTitle,
+				description: issueDescription,
+				status: issueStatus,
+				priority: issuePriority,
+				dueDate: dueDate
+			)
+		} else {
+			// Fallback to original behavior when no ViewModel
+			guard let project = issueProject else { return }
+			let newIssue = Issue(
+				title: issueTitle,
+				notes: issueDescription,
+				status: issueStatus,
+				priority: issuePriority,
+				dueDate: dueDate,
+				sprint: nil,
+				project: project
+			)
+			modelContext.insert(newIssue)
+		}
 		
-		modelContext.insert(newIssue)
+		dismiss()
 	}
 }

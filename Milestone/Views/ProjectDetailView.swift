@@ -6,15 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ProjectDetailView: View {
 	
-	@Environment(AppState.self) private var appState
 	@Environment(\.modelContext) private var modelContext
 	@State private var projectSelectedView: ProjectSelectedView = .board
+	@State private var showCreateIssueSheet = false  // New state for the sheet
 	@Bindable var project: Project
+	@State private var viewModel: ProjectDetailViewModel
 	
-    var body: some View {
+	init(project: Project) {
+		self.project = project
+		_viewModel = State(initialValue: ProjectDetailViewModel(
+			project: project,
+			modelContext: ModelContext(try! ModelContainer(for: Project.self))
+		))
+	}
+	
+	var body: some View {
 		VStack {
 			switch projectSelectedView {
 				case .board:
@@ -43,12 +53,21 @@ struct ProjectDetailView: View {
 			}
 			ToolbarItem(placement: .navigation) {
 				Button {
-					appState.showCreateIssueWindow.toggle()
+					showCreateIssueSheet.toggle()  // Use local state instead
 				} label: {
 					Label("New Issue", systemImage: "plus")
 				}
 				.keyboardShortcut("c", modifiers: [.command])
 			}
 		}
-    }
+		.onAppear {
+			viewModel = ProjectDetailViewModel(
+				project: project,
+				modelContext: modelContext
+			)
+		}
+		.sheet(isPresented: $showCreateIssueSheet) {  // Use local state
+			CreateIssueForm(viewModel: viewModel)
+		}
+	}
 }
